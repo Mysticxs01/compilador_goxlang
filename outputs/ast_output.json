@@ -1,0 +1,284 @@
+{
+    "stmts": [
+        {
+            "name": "mod",
+            "parameters": [
+                {
+                    "name": "x",
+                    "type": "int"
+                },
+                {
+                    "name": "y",
+                    "type": "int"
+                }
+            ],
+            "return_type": "int",
+            "body": [
+                {
+                    "expression": {
+                        "op": "TIMES",
+                        "left": {
+                            "op": "MINUS",
+                            "left": {
+                                "name": "x",
+                                "type": null
+                            },
+                            "right": {
+                                "op": "DIVIDE",
+                                "left": {
+                                    "name": "x",
+                                    "type": null
+                                },
+                                "right": {
+                                    "name": "y",
+                                    "type": null
+                                }
+                            }
+                        },
+                        "right": {
+                            "name": "y",
+                            "type": null
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "is_prime",
+            "parameters": [
+                {
+                    "name": "n",
+                    "type": "int"
+                }
+            ],
+            "return_type": "bool",
+            "body": [
+                {
+                    "test": {
+                        "op": "LT",
+                        "left": {
+                            "name": "n",
+                            "type": null
+                        },
+                        "right": {
+                            "value": 2
+                        }
+                    },
+                    "consequence": [
+                        {
+                            "expression": {
+                                "value": false
+                            }
+                        }
+                    ],
+                    "alternative": null
+                },
+                {
+                    "name": "i",
+                    "type": "int",
+                    "value": {
+                        "value": 2
+                    },
+                    "is_const": false
+                },
+                {
+                    "test": {
+                        "op": "LE",
+                        "left": {
+                            "op": "TIMES",
+                            "left": {
+                                "name": "i",
+                                "type": null
+                            },
+                            "right": {
+                                "name": "i",
+                                "type": null
+                            }
+                        },
+                        "right": {
+                            "name": "n",
+                            "type": null
+                        }
+                    },
+                    "body": [
+                        {
+                            "test": {
+                                "op": "EQ",
+                                "left": {
+                                    "name": "mod",
+                                    "arguments": [
+                                        {
+                                            "name": "n",
+                                            "type": null
+                                        },
+                                        {
+                                            "name": "i",
+                                            "type": null
+                                        }
+                                    ]
+                                },
+                                "right": {
+                                    "value": 0
+                                }
+                            },
+                            "consequence": [
+                                {
+                                    "expression": {
+                                        "value": false
+                                    }
+                                }
+                            ],
+                            "alternative": null
+                        },
+                        {
+                            "loc": {
+                                "name": "i",
+                                "type": null
+                            },
+                            "expr": {
+                                "op": "PLUS",
+                                "left": {
+                                    "name": "i",
+                                    "type": null
+                                },
+                                "right": {
+                                    "value": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "expression": {
+                        "value": true
+                    }
+                }
+            ]
+        },
+        {
+            "name": "factorize",
+            "parameters": [
+                {
+                    "name": "n",
+                    "type": "int"
+                }
+            ],
+            "return_type": null,
+            "body": [
+                {
+                    "name": "factor",
+                    "type": "int",
+                    "value": {
+                        "value": 2
+                    },
+                    "is_const": false
+                },
+                {
+                    "expression": {
+                        "value": "'D'"
+                    }
+                },
+                {
+                    "test": {
+                        "op": "GT",
+                        "left": {
+                            "name": "n",
+                            "type": null
+                        },
+                        "right": {
+                            "value": 1
+                        }
+                    },
+                    "body": [
+                        {
+                            "test": {
+                                "op": "EQ",
+                                "left": {
+                                    "op": "DIVIDE",
+                                    "left": {
+                                        "name": "n",
+                                        "type": null
+                                    },
+                                    "right": {
+                                        "name": "factor",
+                                        "type": null
+                                    }
+                                },
+                                "right": {
+                                    "value": 0
+                                }
+                            },
+                            "body": [
+                                {
+                                    "expression": {
+                                        "name": "factor",
+                                        "type": null
+                                    }
+                                },
+                                {
+                                    "loc": {
+                                        "name": "n",
+                                        "type": null
+                                    },
+                                    "expr": {
+                                        "op": "DIVIDE",
+                                        "left": {
+                                            "name": "n",
+                                            "type": null
+                                        },
+                                        "right": {
+                                            "name": "factor",
+                                            "type": null
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "loc": {
+                                "name": "factor",
+                                "type": null
+                            },
+                            "expr": {
+                                "op": "PLUS",
+                                "left": {
+                                    "name": "factor",
+                                    "type": null
+                                },
+                                "right": {
+                                    "value": 1
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "expression": {
+                "value": "'N'"
+            }
+        },
+        {
+            "name": "num",
+            "type": "int",
+            "value": {
+                "value": 56
+            },
+            "is_const": false
+        },
+        {
+            "name": {
+                "type": "ID",
+                "value": "factorize",
+                "lineno": 36
+            },
+            "arguments": [
+                {
+                    "name": "num",
+                    "type": null
+                }
+            ]
+        }
+    ]
+}
