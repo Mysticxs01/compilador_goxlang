@@ -59,6 +59,36 @@ class TestChecker(unittest.TestCase):
         # Run the checker and expect a type mismatch error
         with self.assertRaises(TypeError):
             Checker().visit(assignment, self.symtab)
+    
+    def test_double_variable_declaration(self):
+        from parser.modelo import Variable
+        var1 = Variable(name="x", type="int")
+        var2 = Variable(name="x", type="int")  # Mismo nombre -> error
+
+        program = Program(stmts=[var1, var2])
+
+        with self.assertRaises(NameError):
+            Checker.check(program)
+    
+    def test_use_variable_before_declaration(self):
+        from parser.modelo import NamedLocation, Print
+        # Usar variable 'x' antes de declararla
+        use_var = Print(expression=NamedLocation(name="x"))
+
+        program = Program(stmts=[use_var])
+
+        with self.assertRaises(NameError):
+            Checker.check(program)
+    
+    def test_call_undefined_function(self):
+        from parser.modelo import FunctionCall, Print
+        # Llamar a una función 'foo' que no existe
+        call_foo = Print(expression=FunctionCall(name="foo", arguments=[]))
+
+        program = Program(stmts=[call_foo])
+
+        with self.assertRaises(NameError):
+            Checker.check(program)
 
 if __name__ == "__main__":
     unittest.main()

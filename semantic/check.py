@@ -32,14 +32,11 @@ class Checker(Visitor):
 
         # Verificar si el nodo raíz es un Program
         if isinstance(n, Program):
-            print("debug: [INFO] Procesando nodo raíz Program")
             for stmt in n.stmts:  # Recorrer cada declaración en el programa
                 stmt.accept(check, env)
         else:
-            print("debug: [INFO] Procesando nodo raíz no Program")
             # Si no es un Program, procesar directamente
             n.accept(check, env)
-
         print("debug: [INFO] Verificación semántica completada")
         return check
 
@@ -47,7 +44,6 @@ class Checker(Visitor):
         '''
         1. recorrer la lista de elementos
         '''
-        print("debug: [INFO] Procesando nodo Program")
         for stmt in n.stmts:
             stmt.accept(self, env)
 
@@ -97,29 +93,32 @@ class Checker(Visitor):
         '''
         test_type = n.test.accept(self, env)
         if test_type != 'bool':
-            raise TypeError(f"Línea {n.lineno}: Error: La condición del while debe ser de tipo bool, no {test_type}")
-        
+            raise TypeError(f"Línea {n.lineno}: Error: La condición del while debe ser de tipo bool")
+        loop_env = Symtab(name="while_loop", parent=env, scope_type="loop")
         # Visitar el cuerpo del while
         for stmt in n.body:
-            stmt.accept(self, env)
+            stmt.accept(self, loop_env)
             
     def visit(self, n:Union[Break, Continue], env:Symtab):
         '''
         1. Verificar que esta dentro de un ciclo while
         '''
-        # Aquí se necesitaría un mecanismo para verificar si estamos dentro de un ciclo
-        pass
+        if not env.find_scope_of_type("loop"):
+            raise SyntaxError(f"Error: '{type(n).__name__.lower()}' debe estar dentro de un while")
+
             
     def visit(self, n:Return, env:Symtab):
         '''
         1. Si se ha definido n.expr, validar que sea del mismo tipo de la función
         '''
+        if not env.find_scope_of_type("function"):
+            raise SyntaxError("Error: 'return' fuera de función")
         if n.expression:
             expr_type = n.expression.accept(self, env)
-            func_type = env.get('return_type')
+            func_type = env.find_scope_of_type("function").get('return_type')
             if func_type != expr_type:
-                raise TypeError(f"Error: El tipo de retorno {expr_type} no coincide con el tipo de la función {func_type}")
-    
+                raise TypeError(f"Error: Tipo de retorno {expr_type} no coincide con {func_type}")
+
     # Declarations
 
     def visit(self, n:Variable, env:Symtab):
@@ -134,7 +133,6 @@ class Checker(Visitor):
                 raise TypeError(f"Error: El tipo de la variable '{n.name}' no coincide con el valor asignado")
         env.add(n.name, n)
         
-
     def visit(self, n:Function, env:Symtab):
         '''
         1. Guardar la función en la TS actual
@@ -142,22 +140,13 @@ class Checker(Visitor):
         3. Agregar todos los n.params dentro de la TS
         4. Visitar n.stmts
         '''
-
         if env.get(n.name):
             raise NameError(f"Error: La función '{n.name}' ya está definida")
         env.add(n.name, n)
-
-        # Crear un nuevo entorno para la función
-        func_env = Symtab(n.name, env)
-
-        # Agregar el tipo de retorno al entorno
+        func_env = Symtab(name=n.name, parent=env, scope_type="function")
         func_env.add('return_type', n.return_type)
-
-        # Agregar parámetros al entorno de la función
         for param in n.parameters:
             func_env.add(param.name, param)
-
-        # Visitar cada sentencia en el cuerpo de la función
         for stmt in n.body:
             stmt.accept(self, func_env)
 

@@ -35,7 +35,7 @@ class Symtab:
 		'''
 		pass
 		
-	def __init__(self, name, parent=None):
+	def __init__(self, name, parent=None, scope_type="global"):
 		'''
 		Crea una tabla de símbolos vacia con la tabla de
 		simbolos padre dada.
@@ -43,9 +43,18 @@ class Symtab:
 		self.name = name
 		self.entries = {}
 		self.parent = parent
+		self.scope_type = scope_type
 		if self.parent:
 			self.parent.children.append(self)
 		self.children = []
+	
+	def find_scope_of_type(self, scope_type):
+		env = self
+		while env:
+			if env.scope_type == scope_type:
+				return env
+			env = env.parent
+		return None
 		
 	def add(self, name, value):
 		'''
@@ -56,9 +65,9 @@ class Symtab:
 		'''
 		if name in self.entries:
 			if self.entries[name].dtype != value.dtype:
-				raise Symtab.SymbolConflictError()
+				raise Symtab.SymbolConflictError(f"Conflicto: '{name}' tiene tipo diferente.")
 			else:
-				raise Symtab.SymbolDefinedError()
+				raise Symtab.SymbolDefinedError(f"Redefinición: '{name}' ya fue definido.")
 		self.entries[name] = value
 		
 	def get(self, name):
