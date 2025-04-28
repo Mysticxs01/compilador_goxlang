@@ -16,8 +16,6 @@ El proyecto está organizado en las siguientes carpetas:
 
 ---
 
-
-
 ## Funcionamiento del Analizador Sintáctico
 
 El analizador sintáctico (`parser.py`) toma como entrada una lista de tokens generada por el analizador léxico (`tokenize.py`) y construye un Árbol de Sintaxis Abstracta (AST) utilizando las clases definidas en `modelo.py`.
@@ -54,7 +52,7 @@ El archivo `main.py` es el punto de entrada del compilador. Realiza las siguient
    - Valida el AST utilizando el analizador semántico.
 
 5. **Salida**:
-   - Guarda el AST en formato JSON y muestra la tabla de símbolos generada.
+   - Guarda el AST en formato JSON y muestra la tabla de símbolos generada o los errores semánticos.
 
 ---
 
@@ -70,7 +68,7 @@ El archivo `main.py` es el punto de entrada del compilador. Realiza las siguient
 
 3. **Analizador Semántico**:
    - `check.py` valida el AST utilizando reglas semánticas definidas en `typesys.py` y `symtab.py`.
-   - Aunque se corrigieron varios errores, el analizador semántico no puede procesar correctamente todos los nodos debido a problemas en el modelo y en la implementación del visitor.
+   - Se corrigieron los errores que no generaban la tabla de símbolos y que no mostraban los errores del archivo .gox a procesar y ahora funciona correctamente y genera una tabla de símbolos válida.
 
 ---
 
@@ -100,6 +98,28 @@ El archivo `main.py` es el punto de entrada del compilador. Realiza las siguient
 - **Causa**: El modelo del AST no implementaba el patrón `Visitor`, lo que impedía que el analizador semántico procesara correctamente los nodos.
 - **Solución**: Se implementó el patrón `Visitor` en las clases del modelo (`modelo.py`).
 
+---
+
+### Nuevos Errores Encontrados y Soluciones
+
+### 7. Error: Análisis Semántico no detectaba errores correctamente
+- **Causa**: El analizador semántico no estaba lanzando excepciones correctamente ni generando la tabla de símbolos.
+- **Solución**: Se modificó el flujo del visitor para acumular los errores encontrados y lanzar las excepciones al finalizar la validación. Además, ahora se genera e imprime correctamente la tabla de símbolos (`Symtab`).
+
+### 8. Error: Dispatch incorrecto de excepciones
+- **Causa**: Las excepciones capturadas por el analizador semántico no contenían la información del error, entregaban un dispatch en lugar de un `raise` correcto.
+- **Solución**: Se ajustó la gestión de errores para realizar un `raise` explícito de las excepciones con el mensaje adecuado, permitiendo una mejor trazabilidad de fallos.
+
+### 9. Error: Tokenización y parseo incorrecto de tipos de datos
+- **Causa**: Existían problemas al tokenizar y parsear correctamente los tipos de datos básicos (`int`, `float`, `char`, `bool`).
+- **Solución**: Se corrigieron las reglas de tokenización (`tokenize.py`) y el parseo en el analizador sintáctico (`parser.py`) para interpretar correctamente los literales y tipos de datos.
+
+### 10. Validación final de errores semánticos
+- **Causa**: No se había verificado que el analizador semántico detectara todos los errores esperados en distintos casos de prueba.
+- **Solución**: Se realizaron pruebas adicionales para confirmar la correcta detección de errores semánticos, asegurando que tanto la acumulación de errores como la tabla de símbolos funcionen de forma estable.
+
+---
+
 ## Pruebas Unitarias
 
 Se implementaron pruebas unitarias para el analizador semántico (`check.py`) utilizando mocks para simular nodos del AST. Estas pruebas verifican el comportamiento del visitor y la validación de tipos.
@@ -108,8 +128,8 @@ Se implementaron pruebas unitarias para el analizador semántico (`check.py`) ut
 
 ## Problemas Pendientes
 
-1. **Validación Semántica Incompleta**:
-   - Aunque el analizador semántico ahora puede procesar más nodos, aún no maneja todos los casos debido a problemas en la implementación del visitor y en la estructura del AST.
+1. **Validación Semántica, Sintáctica y Léxica de algunos casos**:
+   - Ahora el analizador funciona correctamente. Pueden existir casos aislados que les falte detección de errores.
 
 2. **Ejecución del Código**:
    - Actualmente, no hay un intérprete o generador de código para ejecutar programas en Goxlang.
@@ -118,7 +138,7 @@ Se implementaron pruebas unitarias para el analizador semántico (`check.py`) ut
 
 ## Conclusión
 
-El analizador sintáctico ahora funciona correctamente y genera un AST válido. Sin embargo, el analizador semántico aún tiene problemas debido a errores en el modelo y en la implementación del visitor. Se recomienda realizar pruebas exhaustivas y revisar la implementación del visitor para garantizar la corrección del analizador semántico.
+El analizador sintáctico ahora funciona correctamente y genera un AST válido. Además, se han corregido múltiples errores en el analizador semántico, incluyendo problemas en el modelo del AST, la implementación del patrón Visitor, y la gestión de excepciones. Actualmente, el analizador semántico genera una tabla de símbolos válida y detecta errores semánticos de manera estable. Sin embargo, se recomienda realizar pruebas adicionales para cubrir casos límite y garantizar la robustez del sistema. También se sugiere implementar un intérprete o generador de código para completar el flujo del compilador.
 
 Angie Carolina Vargas Villegas  
 David Santiago Lugo Cabrera

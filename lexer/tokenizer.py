@@ -69,6 +69,9 @@ tokens_spec = [
     ('TRUE', r'true'),
     ('FALSE', r'false'),
 
+    # Tipos
+    ('TYPE', r'int|float|char|bool'),
+    
     # Identificadores
     ('ID', r'[a-zA-Z_][a-zA-Z0-9_]*'),
 

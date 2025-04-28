@@ -24,12 +24,15 @@ func factorize(n int) {
 
     while n > 1 {
         while n / factor == 0 {
+            var i int = 5;
             print factor;
             n = n / factor;
         }
         factor = factor + 1;
     }
 }
+
+
 
 print 'N';
 var num int = 56;

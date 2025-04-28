@@ -1,6 +1,6 @@
 # main.py
 import json
-from lexer.tokenize import Lexer, tokens_spec
+from lexer.tokenizer import Lexer, tokens_spec
 from parser.parser import Parser
 from semantic.check import Checker
 from rich import print as pprint
@@ -55,12 +55,11 @@ def main():
     # Analizar semánticamente
     print("\n[INFO] Iniciando análisis semántico...")
     try:
-        checker = Checker.check(ast)
-        print("\n[INFO] Análisis semántico completado con éxito.")
         print("\n[INFO] Tabla de símbolos generada:")
-        checker.env.print()  # Usar el método print de Symtab para mostrar la tabla
+        Checker.check(ast)
+        print("\n[INFO] Análisis semántico completado con éxito.")
     except Exception as e:
-        print(f"[ERROR] Error semántico: {e}")
+        print(e)
 
 if __name__ == "__main__":
     main()

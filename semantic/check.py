@@ -9,6 +9,7 @@ nombres de las definiciones (variables, funciones, etc.).
 Una clave para esta parte del proyecto es realizar pruebas adecuadas.
 A medida que agregue código, piense en cómo podría probarlo.
 '''
+from multimethod import multimethod
 from rich    import print
 from rich.table import Table
 from typing  import Union
@@ -19,40 +20,49 @@ from semantic.typesys import typenames, check_binop, check_unaryop
 
 
 class Checker(Visitor):
+    def __init__(self):
+        self.errors = []  # <-- Aquí guardamos todos los errores
+
     @classmethod
     def check(cls, n: Node):
-        '''
-        1. Crear una nueva tabla de simbolos
-        2. Visitar todas las declaraciones
-        '''
-        print("debug: [INFO] Iniciando verificación semántica")
-        print("debug: [INFO] Creando tabla de símbolos")
         check = cls()
-        env = Symtab(name="global")  # Agregar un nombre para la tabla de símbolos raíz
+        env = Symtab(name="global")
 
-        # Verificar si el nodo raíz es un Program
-        if isinstance(n, Program):
-            print("debug: [INFO] Procesando nodo raíz Program")
-            for stmt in n.stmts:  # Recorrer cada declaración en el programa
-                stmt.accept(check, env)
-        else:
-            print("debug: [INFO] Procesando nodo raíz no Program")
-            # Si no es un Program, procesar directamente
-            n.accept(check, env)
+        try:
+            if isinstance(n, Program):
+                for stmt in n.stmts:
+                    check._safe_accept(stmt, env)
+            else:
+                check._safe_accept(n, env)
 
-        print("debug: [INFO] Verificación semántica completada")
-        return check
+            # 🚨 Si hay errores acumulados, los lanzamos juntos 🚨
+            if check.errors:
+                error_message = "\n".join(str(e) for e in check.errors)
+                raise Exception(f"Se encontraron errores semánticos:\n{error_message}")
 
+            print("debug: [INFO] Verificación semántica completada")
+            env.print()
+
+        except Exception as e:
+            # Para asegurarnos de que capturamos errores en la etapa de check
+            raise e
+
+    def _safe_accept(self, node: Node, env: Symtab):
+        try:
+            node.accept(self, env)
+        except Exception as e:
+            self.errors.append(e)
+
+    @multimethod
     def visit(self, n:Program, env:Symtab):
         '''
         1. recorrer la lista de elementos
         '''
-        print("debug: [INFO] Procesando nodo Program")
         for stmt in n.stmts:
             stmt.accept(self, env)
 
     # Statements
-
+    @multimethod
     def visit(self, n:Assignment, env:Symtab):
         '''
         1. Validar n.loc
@@ -62,15 +72,17 @@ class Checker(Visitor):
         loc_type = n.loc.accept(self, env)
         expr_type = n.expr.accept(self, env)
         if loc_type != expr_type:
-            raise TypeError(f"Error: No se puede asignar {expr_type} a {loc_type}")
+            raise Exception(f"Error: No se puede asignar {expr_type} a {loc_type}")
         return loc_type
-
+    
+    @multimethod
     def visit(self, n:Print, env:Symtab):
         '''
         1. visitar n.expr
         '''
         n.expression.accept(self, env)
 
+    @multimethod
     def visit(self, n:If, env:Symtab):
         '''
         1. Visitar n.test (validar tipos)
@@ -79,7 +91,7 @@ class Checker(Visitor):
         '''
         test_type = n.test.accept(self, env)
         if test_type != 'bool':
-            raise TypeError(f"Línea {n.lineno}: Error: La condición del if debe ser de tipo bool, no {test_type}")
+            raise Exception(f"Línea {n.lineno}: Error: La condición del if debe ser de tipo bool, no {test_type}")
         
         # Visitar el bloque de la condición verdadera
         for stmt in n.consequence:
@@ -89,7 +101,8 @@ class Checker(Visitor):
         if n.alternative:
             for stmt in n.alternative:
                 stmt.accept(self, env)
-            
+
+    @multimethod
     def visit(self, n:While, env:Symtab):
         '''
         1. Visitar n.test (validar tipos)
@@ -97,31 +110,51 @@ class Checker(Visitor):
         '''
         test_type = n.test.accept(self, env)
         if test_type != 'bool':
-            raise TypeError(f"Línea {n.lineno}: Error: La condición del while debe ser de tipo bool, no {test_type}")
-        
+            raise Exception(f"Línea {n.lineno}: Error: La condición del while debe ser de tipo bool")
+        loop_env = Symtab(name=f"while_{env.name}", parent=env, scope_type="loop")
         # Visitar el cuerpo del while
         for stmt in n.body:
-            stmt.accept(self, env)
-            
+            stmt.accept(self, loop_env)
+
+    @multimethod
     def visit(self, n:Union[Break, Continue], env:Symtab):
         '''
         1. Verificar que esta dentro de un ciclo while
         '''
-        # Aquí se necesitaría un mecanismo para verificar si estamos dentro de un ciclo
-        pass
-            
+        if not env.find_scope_of_type("loop"):
+            raise Exception(f"Error: '{type(n).__name__.lower()}' debe estar dentro de un while")
+
+    @multimethod
     def visit(self, n:Return, env:Symtab):
         '''
         1. Si se ha definido n.expr, validar que sea del mismo tipo de la función
         '''
+        if not env.find_scope_of_type("function"):
+            raise Exception("Error: 'return' fuera de función")
         if n.expression:
             expr_type = n.expression.accept(self, env)
-            func_type = env.get('return_type')
+            func_type = env.find_scope_of_type("function").get('return_type')
             if func_type != expr_type:
-                raise TypeError(f"Error: El tipo de retorno {expr_type} no coincide con el tipo de la función {func_type}")
-    
-    # Declarations
+                raise Exception(f"Error: Tipo de retorno {expr_type} no coincide con {func_type}")
 
+    @multimethod
+    def visit(self, n: Float, env: Symtab):
+        return n.type
+    
+    @multimethod
+    def visit(self, n: Integer, env: Symtab):
+        return n.type
+
+    @multimethod
+    def visit(self, n: Bool, env: Symtab):
+        return n.type
+
+    @multimethod
+    def visit(self, n: Char, env: Symtab):
+        return n.type
+        
+    # Declarations
+    @multimethod
     def visit(self, n:Variable, env:Symtab):
         '''
         1. Agregar n.name a la TS actual
@@ -131,10 +164,10 @@ class Checker(Visitor):
         if n.value:
             value_type = n.value.accept(self, env)
             if n.type and n.type != value_type:
-                raise TypeError(f"Error: El tipo de la variable '{n.name}' no coincide con el valor asignado")
+                raise Exception(f"Error: El tipo de la variable '{n.name}' no coincide con el valor asignado")
         env.add(n.name, n)
         
-
+    @multimethod
     def visit(self, n:Function, env:Symtab):
         '''
         1. Guardar la función en la TS actual
@@ -142,25 +175,24 @@ class Checker(Visitor):
         3. Agregar todos los n.params dentro de la TS
         4. Visitar n.stmts
         '''
-
         if env.get(n.name):
             raise NameError(f"Error: La función '{n.name}' ya está definida")
         env.add(n.name, n)
-
-        # Crear un nuevo entorno para la función
-        func_env = Symtab(n.name, env)
-
-        # Agregar el tipo de retorno al entorno
+        func_env = Symtab(name=n.name, parent=env, scope_type="function")
         func_env.add('return_type', n.return_type)
-
-        # Agregar parámetros al entorno de la función
         for param in n.parameters:
             func_env.add(param.name, param)
-
-        # Visitar cada sentencia en el cuerpo de la función
+        has_return = False
         for stmt in n.body:
             stmt.accept(self, func_env)
+            if isinstance(stmt, Return):
+                has_return = True
 
+        # Verificar si hay un return_type pero no hay un return en el cuerpo
+        if n.return_type and not has_return:
+            raise Exception(f"Error: La función '{n.name}' tiene un tipo de retorno '{n.return_type}' pero no retorna ningún valor")
+
+    @multimethod
     def visit(self, n:Parameter, env:Symtab):
         '''
         1. Guardar el parametro (name, type) en TS
@@ -168,15 +200,8 @@ class Checker(Visitor):
         if env.get(n.name):
             raise NameError(f"Error: El parámetro '{n.name}' ya está definido en este ámbito")
         env.add(n.name, n)
-        
-    # Expressions
 
-    def visit(self, n:Literal, env:Symtab):
-        '''
-        1. Retornar el tipo de la literal
-        '''
-        return n.type
-
+    @multimethod
     def visit(self, n:BinOp, env:Symtab):
         '''
         1. visitar n.left y luego n.right
@@ -188,10 +213,11 @@ class Checker(Visitor):
         result_type = check_binop(n.op, left_type, right_type)
         
         if not result_type:
-            raise TypeError(f"Error: Operación '{n.op}' no válida entre {left_type} y {right_type}")
+            raise Exception(f"Error: Operación '{n.op}' no válida entre {left_type} y {right_type}")
 
         return result_type
         
+    @multimethod
     def visit(self, n:UnaryOp, env:Symtab):
         '''
         1. visitar n.expr
@@ -200,9 +226,10 @@ class Checker(Visitor):
         expr_type = n.operand.accept(self, env)
         result_type = check_unaryop(n.op, expr_type)
         if not result_type:
-            raise TypeError(f"Error: Operador unario '{n.op}' no válido para el tipo {expr_type}")
+            raise Exception(f"Error: Operador unario '{n.op}' no válido para el tipo {expr_type}")
         return result_type
 
+    @multimethod
     def visit(self, n:TypeCast, env:Symtab):
         '''
         1. Visitar n.expr para validar
@@ -211,6 +238,7 @@ class Checker(Visitor):
         n.expression.accept(self, env)
         return n.target_type
 
+    @multimethod
     def visit(self, n:FunctionCall, env:Symtab):
         '''
         1. Validar si n.name existe
@@ -222,13 +250,14 @@ class Checker(Visitor):
         if not func:
             raise NameError(f"Error: La función '{n.name}' no está definida")
         if len(n.arguments) != len(func.parameters):
-            raise TypeError(f"Error: La función '{n.name}' espera {len(func.parameters)} argumentos, pero se pasaron {len(n.arguments)}")
+            raise Exception(f"Error: La función '{n.name}' espera {len(func.parameters)} argumentos, pero se pasaron {len(n.arguments)}")
         for arg, param in zip(n.arguments, func.parameters):
             arg_type = arg.accept(self, env)
             if arg_type != param.type:
-                raise TypeError(f"Error: El argumento '{arg}' no es compatible con el parámetro '{param.name}' de tipo {param.type}")
+                raise Exception(f"Error: El argumento '{arg}' no es compatible con el parámetro '{param.name}' de tipo {param.type}")
         return func.return_type
 
+    @multimethod
     def visit(self, n:NamedLocation, env:Symtab):
         '''
         1. Verificar si n.name existe en TS y obtener el tipo
@@ -240,22 +269,10 @@ class Checker(Visitor):
         
         return symbol.type
 
+    @multimethod
     def visit(self, n:MemoryAddress, env:Symtab):
         '''
         1. Visitar n.address (expression) para validar
         2. Retornar el tipo de datos
         '''
         return n.address.accept(self, env)
-    
-    def print_symbol_table(self, env: Symtab):
-        '''
-        Imprime la tabla de símbolos usando rich.Table
-        '''
-        table = Table(title="Tabla de Símbolos")
-        table.add_column("Nombre", style="cyan")
-        table.add_column("Tipo", style="green")
-        table.add_column("Valor", style="magenta")
-
-        for name, symbol in env.entries.items():
-            table.add_row(name, symbol.__class__.__name__, str(symbol))
-        print(table)

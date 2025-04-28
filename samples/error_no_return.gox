@@ -1,0 +1,4 @@
+func g(x int) int {
+   print x;
+   return 5;
+}

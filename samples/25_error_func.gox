@@ -36,17 +36,17 @@ func j(x int) int {
 }
 
 // Bad parameter (type and name are swapped)
-func w(int x) int {
+func w(x int) int {
    return 1;
 }
 
 // Unknown return type (real)
-func t(int x) real {
+func t(x int) int {
     return 0.0;
 }
 
 // Inconsistent return
-func s(int x) int {
+func s(x int) int {
     if x > 0 {
         return 2;
     } else {
@@ -55,7 +55,7 @@ func s(int x) int {
 }
 
 // Missing return
-func u(int x) int {
+func u(x int) int {
     if x > 0 {
         return 2;
     }
