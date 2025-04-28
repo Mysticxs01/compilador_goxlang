@@ -83,7 +83,7 @@
 #
 # bool <- 'true' / 'false'
 
-from lexer.tokenize import Token
+from lexer.tokenizer import Token
 from typing import List
 from dataclasses import dataclass
 from parser.modelo import (
@@ -139,7 +139,7 @@ class Parser:
             arguments = self.arguments()
             self.consume("RPAREN", "Se esperaba ')'")
             self.consume("SEMI", "Se esperaba ';'")
-            return FunctionCall(location, arguments)
+            return FunctionCall(location.value, arguments)
         self.consume("ASSIGN", "Se esperaba '='")
         expression = self.expression()
         self.consume("SEMI", "Se esperaba ';'")
@@ -149,7 +149,7 @@ class Parser:
         is_const = self.tokens[self.current - 1].value == "CONST"
         name = self.consume("ID", "Se esperaba un identificador")
         type_ = None
-        if self.match("ID"):
+        if self.match("TYPE"):
             type_ = self.tokens[self.current - 1].value
         value = None
         if self.match("ASSIGN"):
@@ -164,7 +164,7 @@ class Parser:
         parameters = self.parameters()
         self.consume("RPAREN", "Se esperaba ')'")
         return_type = None
-        if self.match("ID"):
+        if self.match("TYPE"):
             return_type = self.tokens[self.current - 1].value
         body = []
         if not is_imported:
@@ -260,6 +260,12 @@ class Parser:
             expr = self.expression()
             self.consume("RPAREN", "Se esperaba ')'")
             return expr
+        elif self.match("TYPE"):
+            type_ = self.tokens[self.current - 1].value
+            self.consume("LPAREN", "Se esperaba '('")
+            expression = self.expression()
+            self.consume("RPAREN", "Se esperaba ')'")
+            return TypeCast(type_, expression)
         elif self.match("ID"):
             name = self.tokens[self.current - 1].value
             if self.match("LPAREN"):
@@ -275,7 +281,7 @@ class Parser:
         if not self.match("RPAREN"):
             while True:
                 name = self.consume("ID", "Se esperaba un identificador")
-                type_ = self.consume("ID", "Se esperaba un tipo")
+                type_ = self.consume("TYPE", "Se esperaba un tipo")
                 params.append(Parameter(name.value, type_.value))
                 if not self.match("COMMA"):
                     break
@@ -283,7 +289,7 @@ class Parser:
 
     def arguments(self):
         args = []
-        if not self.match("RPAREN"):
+        if self.peek() and self.peek().type != "RPAREN":
             while True:
                 args.append(self.expression())
                 if not self.match("COMMA"):

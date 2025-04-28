@@ -87,8 +87,11 @@ class Symtab:
 		table.add_column('key', style='cyan')
 		table.add_column('value', style='bright_green')
 		
-		for k,v in self.entries.items():
-			value = f"{v.__class__.__name__}({v.name})"
+		for k, v in self.entries.items():
+			if hasattr(v, 'name'):
+				value = f"{v.__class__.__name__}({v.name})"
+			else:
+				value = f"{v.__class__.__name__}({v})"
 			table.add_row(k, value)
 		print(table, '\n')
 		

@@ -210,6 +210,14 @@
                             },
                             "body": [
                                 {
+                                    "name": "i",
+                                    "type": "int",
+                                    "value": {
+                                        "value": 5
+                                    },
+                                    "is_const": false
+                                },
+                                {
                                     "expression": {
                                         "name": "factor",
                                         "type": null
@@ -268,11 +276,7 @@
             "is_const": false
         },
         {
-            "name": {
-                "type": "ID",
-                "value": "factorize",
-                "lineno": 36
-            },
+            "name": "factorize",
             "arguments": [
                 {
                     "name": "num",
