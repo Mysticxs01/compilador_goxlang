@@ -1,0 +1,96 @@
+/*
+# El algoritmo de Shor 
+
+Es un algoritmo cuántico desarrollado por Peter Shor 
+en 1994 que puede factorizar números enteros grandes 
+de manera eficiente. Este algoritmo tiene importantes
+implicaciones para la criptografía, ya que muchos 
+sistemas de cifrado actuales se basan en la 
+dificultad de factorizar números grandes.
+
+## Funcionamiento
+El algoritmo de Shor utiliza las propiedades de la 
+mecánica cuántica para encontrar los factores primos 
+de un número entero N. A continuación, se presentan 
+los pasos generales del algoritmo:
+
+1. *Selección de un número aleatorio*: Se selecciona un número aleatorio a, donde 1 < a < N.
+2. *Cálculo del período*: Se utiliza un circuito cuántico para encontrar el período r de la función f(x) = a^x mod N. Esto se logra mediante la aplicación de la transformada cuántica de Fourier.
+3. *Cálculo de los factores*: Una vez que se ha encontrado el período r, se pueden calcular los factores de N utilizando el algoritmo de Euclides.
+
+## Importancia
+El algoritmo de Shor es importante porque:
+
+- *Amenaza a la criptografía actual*: Muchos sistemas de cifrado, como RSA, se basan en la dificultad de factorizar números grandes. El algoritmo de Shor podría comprometer la seguridad de estos sistemas si se implementa en una computadora cuántica lo suficientemente potente.
+- *Demostración de la potencia de la computación cuántica*: El algoritmo de Shor es un ejemplo de cómo la computación cuántica puede resolver problemas que son difíciles o imposibles de resolver con computadoras clásicas.
+
+## Desafíos
+Aunque el algoritmo de Shor es teóricamente potente, existen varios desafíos para su implementación práctica:
+
+- *Requisitos de recursos cuánticos*: El algoritmo de Shor requiere una gran cantidad de qubits y operaciones cuánticas, lo que es un desafío para la tecnología actual.
+- *Corrección de errores*: La corrección de errores es crucial para la implementación del algoritmo de Shor, ya que los errores cuánticos pueden afectar la precisión del resultado.
+
+En resumen, el algoritmo de Shor es un ejemplo importante de cómo la computación cuántica puede resolver problemas complejos de manera eficiente, y tiene implicaciones significativas para la criptografía y la seguridad de la información.
+*/
+
+func mod(a int, b int) int {
+    return a - b * (a / b);
+}
+
+func gcd(a int, b int) int {
+    while b != 0 {
+        var t int = b;
+        b = mod(a, b);
+        a = t;
+    }
+    return a;
+}
+
+func powmod(a int, x int, n int) int {
+    var result int = 1;
+    while x > 0 {
+        if mod(x, 2) == 1 {
+            result = mod(result * a, n);
+        }
+        a = mod(a * a, n);
+        x = x / 2;
+    }
+    return result;
+}
+
+func find_period(a int, N int) int {
+    var r int = 1;
+    var apow int = powmod(a, r, N);
+    while apow != 1 {
+        r = r + 1;
+        apow = powmod(a, r, N);
+    }
+    return r;
+}
+
+func shor(N int) int {
+    var a int = 2;    // Podrías aleatorizar esto luego
+    if gcd(a, N) != 1 {
+        return a;     // Factor trivial
+    }
+
+    var r int = find_period(a, N);
+    if mod(r, 2) != 0 {
+        return 0;     // No sirve
+    }
+
+    var x int = powmod(a, r / 2, N);
+    if x == N - 1 {
+        return 0;     // No sirve
+    }
+
+    var f1 int = gcd(x - 1, N);
+    var f2 int = gcd(x + 1, N);
+    print f1; print ' ';
+    print f2;
+    return 0;
+}
+
+func _actual_main() int {
+    return shor(151821);   // Debería encontrar 3 y 5
+}

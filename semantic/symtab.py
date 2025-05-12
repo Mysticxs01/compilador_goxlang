@@ -55,7 +55,16 @@ class Symtab:
 				return env
 			env = env.parent
 		return None
-		
+	
+	def find_scope_of_type_name_child(self, scope_type, name):
+		# Busca también en el env actual
+		if self.scope_type == scope_type and self.entries.get(name):
+			return self
+		for child in self.children:
+			if child.scope_type == scope_type and child.entries.get(name):
+				return child
+		return None
+	
 	def add(self, name, value):
 		'''
 		Agrega un simbol con el valor dado a la tabla de simbolos.
@@ -69,7 +78,15 @@ class Symtab:
 			else:
 				raise Symtab.SymbolDefinedError(f"Redefinición: '{name}' ya fue definido.")
 		self.entries[name] = value
+
+	#Agrega un método para quitar del env, como el inverso de add
+	def remove(self, name):
+		if name in self.entries:
+			del self.entries[name]
+		else:
+			raise Symtab.SymbolNotFoundError(f"No se encontró: '{name}'")
 		
+
 	def get(self, name):
 		'''
 		Recupera el símbol con el nombre dado de la tabla de

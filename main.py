@@ -6,7 +6,7 @@ from semantic.check import Checker
 from rich import print as pprint
 
 def main():
-    source_path = "samples/factorize.gox"  # Cambia si tienes otro archivo
+    source_path = "samples/shor.gox"  # Cambia si tienes otro archivo
 
     # Leer código fuente
     try:
@@ -56,7 +56,7 @@ def main():
     print("\n[INFO] Iniciando análisis semántico...")
     try:
         print("\n[INFO] Tabla de símbolos generada:")
-        Checker.check(ast)
+        env = Checker.check(ast)
         print("\n[INFO] Análisis semántico completado con éxito.")
     except Exception as e:
         print(e)

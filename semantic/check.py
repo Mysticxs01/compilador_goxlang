@@ -42,6 +42,7 @@ class Checker(Visitor):
 
             print("debug: [INFO] Verificación semántica completada")
             env.print()
+            return env
 
         except Exception as e:
             # Para asegurarnos de que capturamos errores en la etapa de check
@@ -111,17 +112,21 @@ class Checker(Visitor):
         test_type = n.test.accept(self, env)
         if test_type != 'bool':
             raise Exception(f"Línea {n.lineno}: Error: La condición del while debe ser de tipo bool")
-        loop_env = Symtab(name=f"while_{env.name}", parent=env, scope_type="loop")
+        
+        # Marcar que estamos dentro de un while
+        env.add('in_while', True)
         # Visitar el cuerpo del while
         for stmt in n.body:
-            stmt.accept(self, loop_env)
+            stmt.accept(self, env)
+        # Desmarcar al salir del while
+        env.remove('in_while')
 
     @multimethod
     def visit(self, n:Union[Break, Continue], env:Symtab):
         '''
         1. Verificar que esta dentro de un ciclo while
         '''
-        if not env.find_scope_of_type("loop"):
+        if not env.get('in_while'):
             raise Exception(f"Error: '{type(n).__name__.lower()}' debe estar dentro de un while")
 
     @multimethod
@@ -266,13 +271,14 @@ class Checker(Visitor):
         symbol = env.get(n.name)
         if not symbol:
             raise NameError(f"Error: La variable '{n.name}' no está definida")
-        
+        if n.type == None:
+            n.type = symbol.type
         return symbol.type
 
     @multimethod
     def visit(self, n:MemoryAddress, env:Symtab):
         '''
         1. Visitar n.address (expression) para validar
-        2. Retornar el tipo de datos
+        2. Retornar el tipo de datos de la expresión
         '''
         return n.address.accept(self, env)

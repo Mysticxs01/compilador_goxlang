@@ -4,11 +4,11 @@
             "name": "mod",
             "parameters": [
                 {
-                    "name": "x",
+                    "name": "a",
                     "type": "int"
                 },
                 {
-                    "name": "y",
+                    "name": "b",
                     "type": "int"
                 }
             ],
@@ -16,88 +16,142 @@
             "body": [
                 {
                     "expression": {
-                        "op": "TIMES",
+                        "op": "MINUS",
                         "left": {
-                            "op": "MINUS",
+                            "name": "a",
+                            "type": null
+                        },
+                        "right": {
+                            "op": "TIMES",
                             "left": {
-                                "name": "x",
+                                "name": "b",
                                 "type": null
                             },
                             "right": {
                                 "op": "DIVIDE",
                                 "left": {
-                                    "name": "x",
+                                    "name": "a",
                                     "type": null
                                 },
                                 "right": {
-                                    "name": "y",
+                                    "name": "b",
                                     "type": null
                                 }
                             }
-                        },
-                        "right": {
-                            "name": "y",
-                            "type": null
                         }
                     }
                 }
             ]
         },
         {
-            "name": "is_prime",
+            "name": "gcd",
             "parameters": [
+                {
+                    "name": "a",
+                    "type": "int"
+                },
+                {
+                    "name": "b",
+                    "type": "int"
+                }
+            ],
+            "return_type": "int",
+            "body": [
+                {
+                    "test": {
+                        "op": "NE",
+                        "left": {
+                            "name": "b",
+                            "type": null
+                        },
+                        "right": {
+                            "value": 0
+                        }
+                    },
+                    "body": [
+                        {
+                            "name": "t",
+                            "type": "int",
+                            "value": {
+                                "name": "b",
+                                "type": null
+                            },
+                            "is_const": false
+                        },
+                        {
+                            "loc": {
+                                "name": "b",
+                                "type": null
+                            },
+                            "expr": {
+                                "name": "mod",
+                                "arguments": [
+                                    {
+                                        "name": "a",
+                                        "type": null
+                                    },
+                                    {
+                                        "name": "b",
+                                        "type": null
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "loc": {
+                                "name": "a",
+                                "type": null
+                            },
+                            "expr": {
+                                "name": "t",
+                                "type": null
+                            }
+                        }
+                    ]
+                },
+                {
+                    "expression": {
+                        "name": "a",
+                        "type": null
+                    }
+                }
+            ]
+        },
+        {
+            "name": "powmod",
+            "parameters": [
+                {
+                    "name": "a",
+                    "type": "int"
+                },
+                {
+                    "name": "x",
+                    "type": "int"
+                },
                 {
                     "name": "n",
                     "type": "int"
                 }
             ],
-            "return_type": "bool",
+            "return_type": "int",
             "body": [
                 {
-                    "test": {
-                        "op": "LT",
-                        "left": {
-                            "name": "n",
-                            "type": null
-                        },
-                        "right": {
-                            "value": 2
-                        }
-                    },
-                    "consequence": [
-                        {
-                            "expression": {
-                                "value": false
-                            }
-                        }
-                    ],
-                    "alternative": null
-                },
-                {
-                    "name": "i",
+                    "name": "result",
                     "type": "int",
                     "value": {
-                        "value": 2
+                        "value": 1
                     },
                     "is_const": false
                 },
                 {
                     "test": {
-                        "op": "LE",
+                        "op": "GT",
                         "left": {
-                            "op": "TIMES",
-                            "left": {
-                                "name": "i",
-                                "type": null
-                            },
-                            "right": {
-                                "name": "i",
-                                "type": null
-                            }
+                            "name": "x",
+                            "type": null
                         },
                         "right": {
-                            "name": "n",
-                            "type": null
+                            "value": 0
                         }
                     },
                     "body": [
@@ -108,23 +162,43 @@
                                     "name": "mod",
                                     "arguments": [
                                         {
-                                            "name": "n",
+                                            "name": "x",
                                             "type": null
                                         },
                                         {
-                                            "name": "i",
-                                            "type": null
+                                            "value": 2
                                         }
                                     ]
                                 },
                                 "right": {
-                                    "value": 0
+                                    "value": 1
                                 }
                             },
                             "consequence": [
                                 {
-                                    "expression": {
-                                        "value": false
+                                    "loc": {
+                                        "name": "result",
+                                        "type": null
+                                    },
+                                    "expr": {
+                                        "name": "mod",
+                                        "arguments": [
+                                            {
+                                                "op": "TIMES",
+                                                "left": {
+                                                    "name": "result",
+                                                    "type": null
+                                                },
+                                                "right": {
+                                                    "name": "a",
+                                                    "type": null
+                                                }
+                                            },
+                                            {
+                                                "name": "n",
+                                                "type": null
+                                            }
+                                        ]
                                     }
                                 }
                             ],
@@ -132,17 +206,43 @@
                         },
                         {
                             "loc": {
-                                "name": "i",
+                                "name": "a",
                                 "type": null
                             },
                             "expr": {
-                                "op": "PLUS",
+                                "name": "mod",
+                                "arguments": [
+                                    {
+                                        "op": "TIMES",
+                                        "left": {
+                                            "name": "a",
+                                            "type": null
+                                        },
+                                        "right": {
+                                            "name": "a",
+                                            "type": null
+                                        }
+                                    },
+                                    {
+                                        "name": "n",
+                                        "type": null
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "loc": {
+                                "name": "x",
+                                "type": null
+                            },
+                            "expr": {
+                                "op": "DIVIDE",
                                 "left": {
-                                    "name": "i",
+                                    "name": "x",
                                     "type": null
                                 },
                                 "right": {
-                                    "value": 1
+                                    "value": 2
                                 }
                             }
                         }
@@ -150,39 +250,61 @@
                 },
                 {
                     "expression": {
-                        "value": true
+                        "name": "result",
+                        "type": null
                     }
                 }
             ]
         },
         {
-            "name": "factorize",
+            "name": "find_period",
             "parameters": [
                 {
-                    "name": "n",
+                    "name": "a",
+                    "type": "int"
+                },
+                {
+                    "name": "N",
                     "type": "int"
                 }
             ],
-            "return_type": null,
+            "return_type": "int",
             "body": [
                 {
-                    "name": "factor",
+                    "name": "r",
                     "type": "int",
                     "value": {
-                        "value": 2
+                        "value": 1
                     },
                     "is_const": false
                 },
                 {
-                    "expression": {
-                        "value": "'D'"
-                    }
+                    "name": "apow",
+                    "type": "int",
+                    "value": {
+                        "name": "powmod",
+                        "arguments": [
+                            {
+                                "name": "a",
+                                "type": null
+                            },
+                            {
+                                "name": "r",
+                                "type": null
+                            },
+                            {
+                                "name": "N",
+                                "type": null
+                            }
+                        ]
+                    },
+                    "is_const": false
                 },
                 {
                     "test": {
-                        "op": "GT",
+                        "op": "NE",
                         "left": {
-                            "name": "n",
+                            "name": "apow",
                             "type": null
                         },
                         "right": {
@@ -191,96 +313,289 @@
                     },
                     "body": [
                         {
-                            "test": {
-                                "op": "EQ",
-                                "left": {
-                                    "op": "DIVIDE",
-                                    "left": {
-                                        "name": "n",
-                                        "type": null
-                                    },
-                                    "right": {
-                                        "name": "factor",
-                                        "type": null
-                                    }
-                                },
-                                "right": {
-                                    "value": 0
-                                }
-                            },
-                            "body": [
-                                {
-                                    "name": "i",
-                                    "type": "int",
-                                    "value": {
-                                        "value": 5
-                                    },
-                                    "is_const": false
-                                },
-                                {
-                                    "expression": {
-                                        "name": "factor",
-                                        "type": null
-                                    }
-                                },
-                                {
-                                    "loc": {
-                                        "name": "n",
-                                        "type": null
-                                    },
-                                    "expr": {
-                                        "op": "DIVIDE",
-                                        "left": {
-                                            "name": "n",
-                                            "type": null
-                                        },
-                                        "right": {
-                                            "name": "factor",
-                                            "type": null
-                                        }
-                                    }
-                                }
-                            ]
-                        },
-                        {
                             "loc": {
-                                "name": "factor",
+                                "name": "r",
                                 "type": null
                             },
                             "expr": {
                                 "op": "PLUS",
                                 "left": {
-                                    "name": "factor",
+                                    "name": "r",
                                     "type": null
                                 },
                                 "right": {
                                     "value": 1
                                 }
                             }
+                        },
+                        {
+                            "loc": {
+                                "name": "apow",
+                                "type": null
+                            },
+                            "expr": {
+                                "name": "powmod",
+                                "arguments": [
+                                    {
+                                        "name": "a",
+                                        "type": null
+                                    },
+                                    {
+                                        "name": "r",
+                                        "type": null
+                                    },
+                                    {
+                                        "name": "N",
+                                        "type": null
+                                    }
+                                ]
+                            }
                         }
                     ]
+                },
+                {
+                    "expression": {
+                        "name": "r",
+                        "type": null
+                    }
                 }
             ]
         },
         {
-            "expression": {
-                "value": "'N'"
-            }
-        },
-        {
-            "name": "num",
-            "type": "int",
-            "value": {
-                "value": 56
-            },
-            "is_const": false
-        },
-        {
-            "name": "factorize",
-            "arguments": [
+            "name": "shor",
+            "parameters": [
                 {
-                    "name": "num",
-                    "type": null
+                    "name": "N",
+                    "type": "int"
+                }
+            ],
+            "return_type": "int",
+            "body": [
+                {
+                    "name": "a",
+                    "type": "int",
+                    "value": {
+                        "value": 2
+                    },
+                    "is_const": false
+                },
+                {
+                    "test": {
+                        "op": "NE",
+                        "left": {
+                            "name": "gcd",
+                            "arguments": [
+                                {
+                                    "name": "a",
+                                    "type": null
+                                },
+                                {
+                                    "name": "N",
+                                    "type": null
+                                }
+                            ]
+                        },
+                        "right": {
+                            "value": 1
+                        }
+                    },
+                    "consequence": [
+                        {
+                            "expression": {
+                                "name": "a",
+                                "type": null
+                            }
+                        }
+                    ],
+                    "alternative": null
+                },
+                {
+                    "name": "r",
+                    "type": "int",
+                    "value": {
+                        "name": "find_period",
+                        "arguments": [
+                            {
+                                "name": "a",
+                                "type": null
+                            },
+                            {
+                                "name": "N",
+                                "type": null
+                            }
+                        ]
+                    },
+                    "is_const": false
+                },
+                {
+                    "test": {
+                        "op": "NE",
+                        "left": {
+                            "name": "mod",
+                            "arguments": [
+                                {
+                                    "name": "r",
+                                    "type": null
+                                },
+                                {
+                                    "value": 2
+                                }
+                            ]
+                        },
+                        "right": {
+                            "value": 0
+                        }
+                    },
+                    "consequence": [
+                        {
+                            "expression": {
+                                "value": 0
+                            }
+                        }
+                    ],
+                    "alternative": null
+                },
+                {
+                    "name": "x",
+                    "type": "int",
+                    "value": {
+                        "name": "powmod",
+                        "arguments": [
+                            {
+                                "name": "a",
+                                "type": null
+                            },
+                            {
+                                "op": "DIVIDE",
+                                "left": {
+                                    "name": "r",
+                                    "type": null
+                                },
+                                "right": {
+                                    "value": 2
+                                }
+                            },
+                            {
+                                "name": "N",
+                                "type": null
+                            }
+                        ]
+                    },
+                    "is_const": false
+                },
+                {
+                    "test": {
+                        "op": "EQ",
+                        "left": {
+                            "name": "x",
+                            "type": null
+                        },
+                        "right": {
+                            "op": "MINUS",
+                            "left": {
+                                "name": "N",
+                                "type": null
+                            },
+                            "right": {
+                                "value": 1
+                            }
+                        }
+                    },
+                    "consequence": [
+                        {
+                            "expression": {
+                                "value": 0
+                            }
+                        }
+                    ],
+                    "alternative": null
+                },
+                {
+                    "name": "f1",
+                    "type": "int",
+                    "value": {
+                        "name": "gcd",
+                        "arguments": [
+                            {
+                                "op": "MINUS",
+                                "left": {
+                                    "name": "x",
+                                    "type": null
+                                },
+                                "right": {
+                                    "value": 1
+                                }
+                            },
+                            {
+                                "name": "N",
+                                "type": null
+                            }
+                        ]
+                    },
+                    "is_const": false
+                },
+                {
+                    "name": "f2",
+                    "type": "int",
+                    "value": {
+                        "name": "gcd",
+                        "arguments": [
+                            {
+                                "op": "PLUS",
+                                "left": {
+                                    "name": "x",
+                                    "type": null
+                                },
+                                "right": {
+                                    "value": 1
+                                }
+                            },
+                            {
+                                "name": "N",
+                                "type": null
+                            }
+                        ]
+                    },
+                    "is_const": false
+                },
+                {
+                    "expression": {
+                        "name": "f1",
+                        "type": null
+                    }
+                },
+                {
+                    "expression": {
+                        "value": "' '"
+                    }
+                },
+                {
+                    "expression": {
+                        "name": "f2",
+                        "type": null
+                    }
+                },
+                {
+                    "expression": {
+                        "value": 0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "main",
+            "parameters": [],
+            "return_type": "int",
+            "body": [
+                {
+                    "expression": {
+                        "name": "shor",
+                        "arguments": [
+                            {
+                                "value": 151821
+                            }
+                        ]
+                    }
                 }
             ]
         }

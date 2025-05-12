@@ -67,7 +67,9 @@
 #
 # relterm <- addterm (('+' / '-') addterm)*
 #
-# addterm <- factor (('*' / '/') factor)*
+# addterm <- multterm
+#
+# multterm <- factor (('*' / '/') factor)*
 #
 # factor <- literal
 #        / ('+' / '-' / '^') expression
@@ -90,7 +92,8 @@ from parser.modelo import (
     Integer, Float, Char, Bool, TypeCast, BinOp, 
     UnaryOp, Assignment, Variable, NamedLocation, 
     Break, Continue, Return, Print, If, While, 
-    Function, Parameter, FunctionCall, Program
+    Function, Parameter, FunctionCall, Program,
+    MemoryAddress
 )
 
 # -------------------------------
@@ -236,11 +239,19 @@ class Parser:
         return left
 
     def addterm(self):
+        left = self.multterm()
+        while self.match("PLUS") or self.match("MINUS"):
+            op = self.tokens[self.current - 1].type
+            right = self.multterm()
+            left = BinOp(op, left, right)
+        return left
+
+    def multterm(self):
         left = self.factor()
-        while self.match("PLUS") or self.match("MINUS") or self.match("TIMES") or self.match("DIVIDE"):
-            op = self.tokens[self.current - 1].type  # Obtener el operador actual
+        while self.match("TIMES") or self.match("DIVIDE"):
+            op = self.tokens[self.current - 1].type
             right = self.factor()
-            left = BinOp(op, left, right)  # Crear un nodo BinOp para el AST
+            left = BinOp(op, left, right)
         return left
 
     def factor(self):
@@ -278,7 +289,7 @@ class Parser:
 
     def parameters(self):
         params = []
-        if not self.match("RPAREN"):
+        if self.peek() and self.peek().type != "RPAREN":
             while True:
                 name = self.consume("ID", "Se esperaba un identificador")
                 type_ = self.consume("TYPE", "Se esperaba un tipo")
