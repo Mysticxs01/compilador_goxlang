@@ -541,10 +541,11 @@ if __name__ == '__main__':
 	from lexer.tokenizer import Lexer, tokens_spec
 	from semantic.check import Checker
 
-	#if len(sys.argv) != 2:
-	#	raise SystemExit("Usage: python ircode.py <filename>")
+	if len(sys.argv) != 2:
+		raise SystemExit("Usage: python ircode.py <filename>")
 	
-	source_path = "samples/shor.gox"
+	#source_path = "samples/shor.gox"
+	source_path = sys.argv[1]
 	txt = open(source_path, encoding='utf-8').read()
 	
 	lexer = Lexer(tokens_spec)
